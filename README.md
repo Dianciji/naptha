@@ -1,3 +1,4 @@
 一键执行命令
 
-curl -sSL https://raw.githubusercontent.com/Dianciji/naptha/main/napthaai.sh -o napthaai.sh && chmod +x napthaai.sh && sudo ./napthaai.sh
+
+wget https://raw.githubusercontent.com/Dianciji/naptha/main/napthaai.sh -O napthaai.sh && sed -i 's/\r$//' napthaai.sh && chmod +x napthaai.sh && ./napthaai.sh
