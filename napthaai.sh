@@ -240,23 +240,14 @@ export_keys() {
     if [ -d "node" ]; then
         echo "进入 node 目录..."
         cd node || { echo -e "${RED}进入 node 目录失败！${NC}"; return; }
-        if [ -f ".env" ]; then
-            # 读取 PRIVATE_KEY 的值
-            PRIVATE_KEY=$(grep '^PRIVATE_KEY=' .env | cut -d '=' -f2 | tr -d '[:space:]')
-            if [ -z "$PRIVATE_KEY" ]; then
-                echo -e "${RED}未在 .env 中找到 PRIVATE_KEY 配置！${NC}"
-                cd ..
-                return
-            fi
-            # 检查秘钥文件是否存在
-            if [ -f "$PRIVATE_KEY" ]; then
-                echo "以下是 $PRIVATE_KEY 文件中的秘钥："
-                cat "$PRIVATE_KEY"
-            else
-                echo -e "${RED}秘钥文件 $PRIVATE_KEY 不存在，请确认项目已部署！${NC}"
-            fi
+        # 查找 .pem 文件
+        PEM_FILE=$(find . -maxdepth 1 -type f -name "*.pem" | head -n 1)
+        if [ -n "$PEM_FILE" ]; then
+            echo "找到秘钥文件: $PEM_FILE"
+            echo "以下是秘钥文件内容："
+            cat "$PEM_FILE"
         else
-            echo -e "${RED}未找到 .env 文件，请确认项目已部署！${NC}"
+            echo -e "${RED}未在 node 目录下找到 .pem 文件，请确认项目已部署或秘钥文件存在！${NC}"
         fi
         echo "返回上一级目录..."
         cd ..
