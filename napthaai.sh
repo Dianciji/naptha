@@ -241,11 +241,13 @@ export_keys() {
         echo "进入 node 目录..."
         cd node || { echo -e "${RED}进入 node 目录失败！${NC}"; return; }
         # 查找 .pem 文件
-        PEM_FILE=$(find . -maxdepth 1 -type f -name "*.pem" | head -n 1)
-        if [ -n "$PEM_FILE" ]; then
-            echo "找到秘钥文件: $PEM_FILE"
-            echo "以下是秘钥文件内容："
-            cat "$PEM_FILE"
+        if ls *.pem >/dev/null 2>&1; then
+            for pem_file in *.pem; do
+                echo "找到秘钥文件: $pem_file"
+                echo "以下是秘钥文件内容："
+                cat "$pem_file"
+                echo
+            done
         else
             echo -e "${RED}未在 node 目录下找到 .pem 文件，请确认项目已部署或秘钥文件存在！${NC}"
         fi
