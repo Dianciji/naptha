@@ -238,7 +238,8 @@ view_logs() {
 export_keys() {
     echo -e "${GREEN}导出秘钥...${NC}"
     if [ -d "node" ]; then
-        cd node
+        echo "进入 node 目录..."
+        cd node || { echo -e "${RED}进入 node 目录失败！${NC}"; return; }
         if [ -f ".env" ]; then
             # 读取 PRIVATE_KEY 的值
             PRIVATE_KEY=$(grep '^PRIVATE_KEY=' .env | cut -d '=' -f2 | tr -d '[:space:]')
@@ -257,6 +258,7 @@ export_keys() {
         else
             echo -e "${RED}未找到 .env 文件，请确认项目已部署！${NC}"
         fi
+        echo "返回上一级目录..."
         cd ..
     else
         echo -e "${RED}node 目录不存在，请先部署项目！${NC}"
