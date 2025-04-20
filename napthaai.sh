@@ -190,6 +190,40 @@ deploy_project() {
     echo -e "${GREEN}部署完成！${NC}"
 }
 
+# 手动重启函数
+restart_project() {
+    echo -e "${GREEN}开始手动重启...${NC}"
+
+    # 检查 screen 是否安装
+    if ! check_installed screen "Screen"; then
+        echo "安装 screen..."
+        apt-get install -y screen
+        check_error "安装 screen"
+    fi
+
+    # 检查 node 目录是否存在
+    if [ ! -d "node" ]; then
+        echo -e "${RED}node 目录不存在，请先部署项目！${NC}"
+        return
+    fi
+
+    # 检查是否存在名为 naptha 的 screen 会话
+    if screen -ls | grep -q "naptha"; then
+        echo "找到现有的 naptha screen 会话，正在删除..."
+        screen -S naptha -X quit
+        check_error "删除 naptha screen 会话"
+    else
+        echo "未找到 naptha screen 会话，将创建新的会话..."
+    fi
+
+    # 创建新的 screen 会话并运行 launch.sh
+    echo "创建新的 naptha screen 会话并运行 launch.sh..."
+    screen -dmS naptha bash -c "cd node && bash launch.sh"
+    check_error "创建 naptha screen 会话并运行 launch.sh"
+
+    echo -e "${GREEN}手动重启完成！可以使用 'screen -r naptha' 查看会话。${NC}"
+}
+
 # 查看日志子菜单
 show_log_menu() {
     echo -e "${YELLOW}=== 查看日志 ===${NC}"
@@ -264,8 +298,9 @@ show_menu() {
     echo "1. 一键部署"
     echo "2. 查看日志"
     echo "3. 导出秘钥"
+    echo "4. 手动重启"
     echo "0. 退出脚本"
-    echo -e "${YELLOW}请输入选项 (0-3):${NC}"
+    echo -e "${YELLOW}请输入选项 (0-4):${NC}"
 }
 
 # 主循环
@@ -282,12 +317,15 @@ while true; do
         3)
             export_keys
             ;;
+        4)
+            restart_project
+            ;;
         0)
             echo -e "${GREEN}退出脚本。${NC}"
             exit 0
             ;;
         *)
-            echo -e "${RED}无效选项，请输入 0-3！${NC}"
+            echo -e "${RED}无效选项，请输入 0-4！${NC}"
             ;;
     esac
     echo
