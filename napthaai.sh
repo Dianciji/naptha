@@ -142,6 +142,17 @@ deploy_project() {
     # 进入项目目录
     cd node || { echo -e "${RED}进入 node 目录失败！${NC}"; exit 1; }
 
+    # 提示用户输入用户名
+    echo -e "${YELLOW}请输入用户名（用于生成密钥文件，例如输入 'abc' 将生成 'abc.pem'）:${NC}"
+    read username
+    if [ -z "$username" ]; then
+        echo -e "${RED}用户名不能为空！${NC}"
+        exit 1
+    fi
+    # 保存用户名到文件
+    echo "$username" > username.txt
+    check_error "保存用户名"
+
     # 检查并创建虚拟环境
     if [ ! -d ".venv" ]; then
         echo "创建 Python 虚拟环境..."
@@ -213,7 +224,7 @@ restart_project() {
         screen -S naptha -X quit
         check_error "删除 naptha screen 会话"
     else
-        echo "未找到 naptha screen 会话，将创建新的会话..."
+        echo "未找到 lea screen 会话，将创建新的会话..."
     fi
 
     # 创建新的 screen 会话并运行 launch.sh
@@ -274,17 +285,33 @@ export_keys() {
     if [ -d "node" ]; then
         echo "进入 node 目录..."
         cd node || { echo -e "${RED}进入 node 目录失败！${NC}"; return; }
-        # 查找 .pem 文件
-        if ls *.pem >/dev/null 2>&1; then
-            for pem_file in *.pem; do
+
+        # 检查是否有保存的用户名
+        if [ -f "username.txt" ]; then
+            username=$(cat username.txt)
+            pem_file="${username}.pem"
+            if [ -f "$pem_file" ]; then
                 echo "找到秘钥文件: $pem_file"
                 echo "以下是秘钥文件内容："
                 cat "$pem_file"
                 echo
-            done
+            else
+                echo -e "${RED}未找到秘钥文件 $pem_file，请确认项目已正确部署！${NC}"
+            fi
         else
-            echo -e "${RED}未在 node 目录下找到 .pem 文件，请确认项目已部署或秘钥文件存在！${NC}"
+            echo -e "${YELLOW}未找到保存的用户名，尝试列出所有 .pem 文件...${NC}"
+            if ls *.pem >/dev/null 2>&1; then
+                for pem_file in *.pem; do
+                    echo "找到秘钥文件: $pem_file"
+                    echo "以下是秘钥文件内容："
+                    cat "$pem_file"
+                    echo
+                done
+            else
+                echo -e "${RED}未在 node 目录下找到任何 .pem 文件，请确认项目已部署或秘钥文件存在！${NC}"
+            fi
         fi
+
         echo "返回上一级目录..."
         cd ..
     else
